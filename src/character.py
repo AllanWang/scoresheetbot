@@ -1,5 +1,8 @@
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, TYPE_CHECKING
 import discord
+
+if TYPE_CHECKING:
+    from src.scoreSheetBot import ScoreSheetBot
 
 CHARACTERS = {
     'banjo_and_kazooie': ['banjo', 'banjokazooie'],
@@ -143,7 +146,7 @@ def post_process(character: str, canonical_name: str, alt_num: int) -> Optional[
     return '{}{}'.format(canonical_name, '' if alt_num == 1 else alt_num)
 
 
-def pre_process(input_str: str) -> Tuple[str, str, int]:
+def pre_process(input_str: str, bot: 'ScoreSheetBot') -> Tuple[str, str, int]:
     input_str = clean_emoji(input_str)
     # Lowercase, remove ':' and '_'.
     input_str = input_str.strip(':').lower().replace('_', '').replace(' ', '')
@@ -163,11 +166,11 @@ def pre_process(input_str: str) -> Tuple[str, str, int]:
         canonical_name = CANONICAL_NAMES_MAP[character]
         return character, canonical_name, alt_num
     else:
-        raise ValueError('Unknown character: \'{}\', try `,chars` '.format(character))
+        raise ValueError('Unknown character: \'{}\', try `{}chars` '.format(character, bot.prefix))
 
 
-def string_to_canonical(input_str: str) -> Optional[str]:
-    character, base, alt_num = pre_process(input_str)
+def string_to_canonical(input_str: str, bot: 'ScoreSheetBot') -> Optional[str]:
+    character, base, alt_num = pre_process(input_str, bot)
     return post_process(character, base, alt_num)
 
 
@@ -176,7 +179,7 @@ def canonical_to_emote(canonical: str, bot) -> str:
 
 
 def string_to_emote(input_str: str, bot) -> Optional[str]:
-    return str(discord.utils.get(bot.emojis, name=string_to_canonical(input_str)))
+    return str(discord.utils.get(bot.emojis, name=string_to_canonical(input_str, bot)))
 
 
 def all_alts(input_str: str, bot):
@@ -206,8 +209,8 @@ class Character:
             self.emoji = ''
             return
         char = clean_emoji(char)
-        _, self.base, self.skin = pre_process(char)
-        self.emoji_name = string_to_canonical(char)
+        _, self.base, self.skin = pre_process(char, bot)
+        self.emoji_name = string_to_canonical(char, bot)
         if bot:
             self.emoji = canonical_to_emote(self.emoji_name, bot)
         else:

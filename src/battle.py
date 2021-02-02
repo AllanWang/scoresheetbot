@@ -1,11 +1,11 @@
 from dataclasses import dataclass, field
-from typing import Optional, Set, List, Callable
+from typing import Optional, Set, List, TYPE_CHECKING
 from src.character import Character
 from discord import embeds, colour
 from datetime import datetime
 import random
-
-from src.scoreSheetBot import ScoreSheetBot
+if TYPE_CHECKING:
+    from src.scoreSheetBot import ScoreSheetBot
 
 
 class StateError(Exception):
@@ -168,7 +168,7 @@ class TimerMatch(Match):
 
 
 class Battle:
-    def __init__(self, bot: ScoreSheetBot, name1: str, name2: str, players: int, mock: bool = False,
+    def __init__(self, bot: 'ScoreSheetBot', name1: str, name2: str, players: int, mock: bool = False,
                  playoff: bool = False):
         self.bot = bot
         self.team1 = Team(name1, players, players * PLAYER_STOCKS)
